@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Imágenes a GitHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        input[type="file"] {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Subir Imágenes a GitHub</h1>
+    <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jfif, image/jpg" multiple />
+    <button id="uploadButton">Subir Imágenes</button>
+    <div class="message" id="message"></div>
+
+    <script>
+        document.getElementById('uploadButton').addEventListener('click', async () => {
+            const files = document.getElementById('fileInput').files;
+            if (files.length === 0) {
+                document.getElementById('message').innerText = "Por favor selecciona al menos una imagen.";
+                return;
+            }
+
+            // Configura tu token de GitHub y el repositorio
+            const token = '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'; // Reemplaza con tu token de GitHub
+            const repoOwner = 'FetuStudio'; // Tu nombre de usuario de GitHub
+            const repoName = 'images'; // El nombre del repositorio al que subes las imágenes
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const base64Image = await fileToBase64(file);
+
+                // Prepara la carga a la API de GitHub
+                const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${file.name}`;
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Subiendo imagen ${file.name}`,
+                        content: base64Image.split(',')[1],  // Elimina el prefijo de base64
+                        branch: 'main'  // O la rama a la que deseas subir la imagen
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('message').innerText = `Imagen ${file.name} subida correctamente.`;
+                } else {
+                    document.getElementById('message').innerText = `Error al subir la imagen ${file.name}.`;
+                }
+            }
+        });
+
+        // Convierte el archivo a base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+</body>
+</html>
