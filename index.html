@@ -64,10 +64,13 @@
                     })
                 });
 
+                // Verificación de la respuesta de la API
+                const result = await response.json(); // Obtenemos el resultado de la respuesta en formato JSON
                 if (response.ok) {
                     document.getElementById('message').innerText = `Imagen ${file.name} subida correctamente.`;
                 } else {
-                    document.getElementById('message').innerText = `Error al subir la imagen ${file.name}.`;
+                    document.getElementById('message').innerText = `Error al subir la imagen ${file.name}: ${result.message || result.errors || 'Desconocido'}`;
+                    console.error(result); // Muestra el error completo en la consola
                 }
             }
         });
@@ -84,3 +87,4 @@
     </script>
 </body>
 </html>
+
